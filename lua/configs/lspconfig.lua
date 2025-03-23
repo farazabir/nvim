@@ -22,3 +22,23 @@ end
 --   on_init = nvlsp.on_init,
 --   capabilities = nvlsp.capabilities,
 -- }
+
+
+require('lspconfig').jdtls.setup({
+  cmd = { "jdtls" },
+  root_dir = function(fname)
+    return require('lspconfig.util').root_pattern("pom.xml", "build.gradle", ".git")(fname) or vim.fn.getcwd()
+  end,
+  settings = {
+    java = {
+      configuration = {
+        runtimes = {
+          {
+            name = "JavaSE-21",
+            path = "/usr/lib/jvm/java-21-openjdk-amd64",
+          }
+        }
+      }
+    }
+  }
+})
