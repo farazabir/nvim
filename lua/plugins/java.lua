@@ -1,7 +1,3 @@
-<<<<<<< HEAD
--- ~/.config/nvim/lua/plugins/java.lua
-=======
->>>>>>> origin/master
 return {
   {
     "nvim-java/nvim-java",
@@ -16,20 +12,6 @@ return {
       "nvim-neotest/nvim-nio",
     },
     config = function()
-<<<<<<< HEAD
-      -- 1. Initialize nvim-java first
-      require('java').setup({
-        root_markers = { "build.gradle", ".git", "pom.xml" }, -- For Gradle project detection
-        jdk = {
-          path = "/usr/lib/jvm/java-21-openjdk-amd64",
-        },
-      })
-
-      -- 2. Set up jdtls after nvim-java
-      local ok, err = pcall(function()
-        require("lspconfig").jdtls.setup({
-          root_dir = require("lspconfig.util").root_pattern("build.gradle", ".git"),
-=======
       -- 1. Prompt for projectName
       local project_name = vim.fn.input("Enter project name (e.g., leetcode): ")
       if project_name == "" then
@@ -74,19 +56,11 @@ return {
               }
             end
           end,
->>>>>>> origin/master
           settings = {
             java = {
               configuration = {
                 runtimes = {
-<<<<<<< HEAD
-                  {
-                    name = "JavaSE-21",
-                    path = "/usr/lib/jvm/java-21-openjdk-amd64",
-                  },
-=======
                   { name = "JavaSE-21", path = "/usr/lib/jvm/java-21-openjdk" },
->>>>>>> origin/master
                 },
               },
             },
@@ -94,17 +68,10 @@ return {
         })
       end)
       if not ok then
-<<<<<<< HEAD
-        vim.notify("nvim-java setup failed: " .. err, vim.log.levels.ERROR)
-      end
-
-      -- 3. Configure DAP and DAP UI
-=======
         vim.notify("JDTLS setup failed: " .. err, vim.log.levels.ERROR)
       end
 
       -- 4. Configure DAP and DAP UI
->>>>>>> origin/master
       local dap = require("dap")
       dap.defaults.fallback.terminal_win_cmd = "belowright new"
       dap.defaults.fallback.focus_terminal = true
@@ -114,10 +81,7 @@ return {
 
       dap.listeners.after.event_initialized["dapui_config"] = function()
         dapui.open()
-<<<<<<< HEAD
-=======
         vim.notify("DAP session initialized", vim.log.levels.INFO)
->>>>>>> origin/master
       end
       dap.listeners.before.event_terminated["dapui_config"] = function()
         dapui.close()
@@ -125,8 +89,6 @@ return {
       dap.listeners.before.event_exited["dapui_config"] = function()
         dapui.close()
       end
-<<<<<<< HEAD
-=======
 
       -- 5. Keymaps with mainClass prompt for LeetCode flexibility
       vim.keymap.set("n", "<F5>", function()
@@ -148,7 +110,6 @@ return {
       end, { noremap = true, silent = false, desc = "DAP: Toggle Breakpoint" })
       vim.keymap.set("n", "<Leader>dt", function() dap.terminate() end, { noremap = true, silent = true, desc = "DAP: Terminate" })
       vim.keymap.set("n", "<Leader>du", function() dapui.toggle() end, { noremap = true, silent = true, desc = "DAP UI: Toggle" })
->>>>>>> origin/master
     end,
   },
 }

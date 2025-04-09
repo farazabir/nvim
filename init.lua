@@ -2,11 +2,6 @@
 vim.g.base46_cache = vim.fn.stdpath "data" .. "/base46/"
 vim.g.mapleader = " "
 
-<<<<<<< HEAD
-vim.cmd([[command! Runjava term /usr/lib/jvm/java-21-openjdk-amd64/bin/java -cp /home/farazabir/personal/leetcode/app/bin/main org.example.App]])
-
--- Bootstrap lazy.nvim
-=======
 vim.api.nvim_create_user_command("Runjava", function()
   local project_root = vim.fn.findfile("build.gradle.kts", ".;")
   if project_root == "" then
@@ -27,7 +22,6 @@ vim.api.nvim_create_user_command("Runjava", function()
   vim.cmd(cmd)
 end, { desc = "Build if needed and run Java application" })
 
->>>>>>> origin/master
 local lazypath = vim.fn.stdpath "data" .. "/lazy/lazy.nvim"
 if not vim.uv.fs_stat(lazypath) then
   local repo = "https://github.com/folke/lazy.nvim.git"
@@ -37,38 +31,14 @@ vim.opt.rtp:prepend(lazypath)
 
 local lazy_config = require "configs.lazy"
 
-<<<<<<< HEAD
 -- Load plugins
 require("lazy").setup({
-=======
-
-require("lazy").setup({
-  { import = "plugins" },        
-  { import = "plugins.java" }, 
-  {import = "plugins.web"},
-  {import = "plugins.rn"},
->>>>>>> origin/master
   {
     "NvChad/NvChad",
     lazy = false,
     branch = "v2.5",
     import = "nvchad.plugins",
   },
-<<<<<<< HEAD
-  { import = "plugins" },
-}, lazy_config)
-
-
--- Ensure Telescope is loaded
-require('telescope').setup {}
-
--- Create an autocommand to trigger Telescope on startup
-vim.api.nvim_create_autocmd("VimEnter", {
-  callback = function()
-    -- Delay slightly to ensure Neovim is fully loaded
-    vim.defer_fn(function()
-      require('telescope.builtin').find_files()
-=======
   {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
@@ -107,7 +77,6 @@ vim.api.nvim_create_autocmd("VimEnter", {
   callback = function()
     vim.defer_fn(function()
       require("telescope.builtin").find_files()
->>>>>>> origin/master
     end, 50)
   end,
 })
@@ -119,11 +88,6 @@ dofile(vim.g.base46_cache .. "statusline")
 require "options"
 require "nvchad.autocmds"
 
-<<<<<<< HEAD
-
-
-=======
->>>>>>> origin/master
 vim.schedule(function()
   require "mappings"
 end)
