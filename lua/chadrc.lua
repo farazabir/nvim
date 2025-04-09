@@ -6,7 +6,11 @@
 local M = {}
 
 M.base46 = {
+<<<<<<< HEAD
 	theme = "ayu_dark",
+=======
+	theme = "catppuccin",
+>>>>>>> origin/master
 
 	-- hl_override = {
 	-- 	Comment = { italic = true },
