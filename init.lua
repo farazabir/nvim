@@ -1,4 +1,3 @@
--- ~/.config/nvim/init.lua
 vim.g.base46_cache = vim.fn.stdpath "data" .. "/base46/"
 vim.g.mapleader = " "
 
@@ -31,8 +30,12 @@ vim.opt.rtp:prepend(lazypath)
 
 local lazy_config = require "configs.lazy"
 
--- Load plugins
+
 require("lazy").setup({
+  { import = "plugins" },        
+  { import = "plugins.java" }, 
+  {import = "plugins.web"},
+  {import = "plugins.rn"},
   {
     "NvChad/NvChad",
     lazy = false,
@@ -47,6 +50,7 @@ require("lazy").setup({
         ensure_installed = { "javascript", "typescript", "tsx", "html", "python" },
         highlight = { enable = true },
         autotag = { enable = true },
+        filters = { dotfliles = false },
       })
     end,
   },
@@ -72,7 +76,43 @@ require("lazy").setup({
 }, lazy_config)
 
 -- Telescope setup
-require("telescope").setup {}
+require("telescope").setup {
+  defaults = {
+    mappings = {
+      i = {
+        ["<C-j>"] = require("telescope.actions").move_selection_next,
+        ["<C-k>"] = require("telescope.actions").move_selection_previous,
+      },
+    },
+    file_ignore_patterns = { "node_modules", "%.class", "%.git/" },
+  },
+  pickers = {
+    find_files = {
+      hidden = true, 
+      
+    },
+    live_grep = {
+      additional_args = function()
+        return { "--hidden", "--glob", "!**/.git/*" } 
+      end,
+    },
+  },
+}
+
+vim.api.nvim_set_keymap(
+  "n",
+  "<leader>fw",
+  [[<cmd>lua require('telescope.builtin').live_grep({ default_text = vim.fn.expand('<cword>') })<CR>]],
+  { noremap = true, silent = true, desc = "Search word under cursor" }
+)
+
+vim.api.nvim_set_keymap(
+  "n",
+  "<leader>fs",
+  [[<cmd>lua require('telescope.builtin').live_grep()<CR>]],
+  { noremap = true, silent = true, desc = "Search with input" }
+)
+
 vim.api.nvim_create_autocmd("VimEnter", {
   callback = function()
     vim.defer_fn(function()
@@ -81,7 +121,6 @@ vim.api.nvim_create_autocmd("VimEnter", {
   end,
 })
 
--- Load theme
 dofile(vim.g.base46_cache .. "defaults")
 dofile(vim.g.base46_cache .. "statusline")
 

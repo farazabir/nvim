@@ -140,6 +140,9 @@ return {
       require("nvim-treesitter.configs").setup({
         ensure_installed = { "dart" },
         highlight = { enable = true },
+        filters = {
+          dotfiles = false,
+          },
       })
     end,
   },

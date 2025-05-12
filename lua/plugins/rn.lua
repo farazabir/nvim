@@ -118,6 +118,9 @@ return {
           ensure_installed = { "javascript", "typescript", "tsx", "json" },
           highlight = { enable = true },
           autotag = { enable = true },
+          filters = {
+            dotfiles = false,
+            },
         })
       end,
     },

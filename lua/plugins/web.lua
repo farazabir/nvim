@@ -5,25 +5,39 @@ return {
       "williamboman/mason.nvim",
       "williamboman/mason-lspconfig.nvim",
       "folke/neoconf.nvim",
+      "hrsh7th/cmp-nvim-lsp",
     },
     config = function()
-      -- Ensure Mason is set up
       require("mason").setup()
       require("mason-lspconfig").setup({
-        ensure_installed = {
-          "eslint",       
-          "ts_ls",         
-          "tailwindcss",  
-          "prettierd",    
-        },
+        ensure_installed = { "eslint", "ts_ls", "tailwindcss", "prettierd" },
         automatic_installation = true,
       })
 
       local lspconfig = require("lspconfig")
+      local cmp_nvim_lsp = require("cmp_nvim_lsp")
+
+      local on_attach = function(client, bufnr)
+        vim.api.nvim_buf_set_option(bufnr, "omnifunc", "v:lua.vim.lsp.omnifunc")
+        local opts = { buffer = bufnr, noremap = true, silent = true }
+        vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
+        vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
+        vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
+        vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
+
+        if client.name == "ts_ls" then
+          client.server_capabilities.documentFormattingProvider = false
+          client.server_capabilities.documentRangeFormattingProvider = false
+        end
+      end
+
+      local capabilities = cmp_nvim_lsp.default_capabilities()
 
       lspconfig.ts_ls.setup({
         root_dir = lspconfig.util.root_pattern("package.json", "tsconfig.json", ".git"),
         single_file_support = true,
+        capabilities = capabilities,
+        on_attach = on_attach,
         settings = {
           typescript = {
             inlayHints = {
@@ -34,6 +48,14 @@ return {
               includeInlayPropertyDeclarationTypeHints = true,
               includeInlayFunctionLikeReturnTypeHints = true,
               includeInlayEnumMemberValueHints = true,
+            },
+            suggest = {
+              autoImports = true,
+              completeFunctionCalls = true,
+              paths = true,
+            },
+            completions = {
+              completeFunctionCalls = true,
             },
           },
           javascript = {
@@ -46,36 +68,42 @@ return {
               includeInlayFunctionLikeReturnTypeHints = true,
               includeInlayEnumMemberValueHints = true,
             },
+            suggest = {
+              autoImports = true,
+              completeFunctionCalls = true,
+              paths = true,
+            },
+            completions = {
+              completeFunctionCalls = true,
+            },
           },
         },
       })
 
       lspconfig.eslint.setup({
         root_dir = lspconfig.util.root_pattern("package.json", ".eslintrc", ".git"),
-        settings = {
-          format = false,
-          lintTask = {
-            enable = true,
-          },
-        },
+        capabilities = capabilities,
         on_attach = function(client, bufnr)
           vim.api.nvim_create_autocmd("BufWritePre", {
             buffer = bufnr,
             command = "EslintFixAll",
           })
         end,
+        settings = {
+          format = false,
+          lintTask = { enable = true },
+        },
       })
 
-      -- Tailwind CSS LSP
       lspconfig.tailwindcss.setup({
         root_dir = lspconfig.util.root_pattern("tailwind.config.js", "tailwind.config.ts", "package.json", ".git"),
+        capabilities = capabilities,
+        on_attach = on_attach,
         settings = {
           tailwindCSS = {
             classAttributes = { "class", "className", "ngClass" },
             experimental = {
-              classRegex = {
-                "tw\\(['\"]([^'\"]*)['\"]\\)", -- Matches tw('...') for template literals
-              },
+              classRegex = { "tw\\(['\"]([^'\"]*)['\"]\\)" },
             },
           },
         },
@@ -83,95 +111,40 @@ return {
     end,
   },
 
-  -- Null-ls for formatting
   {
-    "jose-elias-alvarez/null-ls.nvim",
-    dependencies = { "nvim-lua/plenary.nvim" },
+    "hrsh7th/nvim-cmp",
+    dependencies = {
+      "hrsh7th/cmp-nvim-lsp",
+      "hrsh7th/cmp-buffer",
+      "hrsh7th/cmp-path",
+      "hrsh7th/cmp-cmdline",
+      "L3MON4D3/LuaSnip",
+      "saadparwaiz1/cmp_luasnip",
+    },
     config = function()
-      local null_ls = require("null-ls")
-      null_ls.setup({
-        sources = {
-          null_ls.builtins.formatting.prettierd.with({
-            filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact", "json", "css", "html" },
-          }),
-          null_ls.builtins.diagnostics.eslint_d.with({
-            filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact" },
-          }),
+      local cmp = require("cmp")
+      cmp.setup({
+        snippet = {
+          expand = function(args)
+            require("luasnip").lsp_expand(args.body)
+          end,
         },
-        -- Format on save
-        on_attach = function(client, bufnr)
-          if client.supports_method("textDocument/formatting") then
-            vim.api.nvim_create_autocmd("BufWritePre", {
-              buffer = bufnr,
-              callback = function()
-                vim.lsp.buf.format({ bufnr = bufnr })
-              end,
-            })
-          end
-        end,
+        mapping = cmp.mapping.preset.insert({
+          ["<C-b>"] = cmp.mapping.scroll_docs(-4),
+          ["<C-f>"] = cmp.mapping.scroll_docs(4),
+          ["<C-Space>"] = cmp.mapping.complete(),
+          ["<C-e>"] = cmp.mapping.abort(),
+          ["<CR>"] = cmp.mapping.confirm({ select = true }),
+        }),
+        sources = cmp.config.sources({
+          { name = "nvim_lsp" },
+          { name = "luasnip" },
+          { name = "buffer" },
+          { name = "path" },
+        }),
       })
     end,
   },
 
-  -- nvim-ts-autotag for auto-tagging
-  {
-    "windwp/nvim-ts-autotag",
-    event = { "InsertEnter" }, -- Load on insert mode for better performance
-    config = function()
-      require("nvim-ts-autotag").setup({
-        filetypes = {
-          "html",
-          "javascript",
-          "typescript",
-          "javascriptreact",
-          "typescriptreact",
-          "jsx",
-          "tsx",
-          'ts',
-          "xml",
-        },
-      })
-    end,
-  },
+ 
 }
-
--- -- DAP for React Native debugging
--- {
---   "mfussenegger/nvim-dap",
---   dependencies = {
---     "rcarriga/nvim-dap-ui",
---     "nvim-neotest/nvim-nio",
---   },
---   config = function()
---     local dap = require("dap")
---     dap.adapters.node2 = {
---       type = "executable",
---       command = "node",
---       args = { "/path/to/vscode-node-debug2/out/src/nodeDebug.js" }, 
---     }
---     dap.configurations.typescriptreact = {
---       {
---         type = "node2",
---         request = "launch",
---         name = "Launch React Native",
---         program = "${workspaceFolder}/node_modules/.bin/react-native",
---         args = { "run-android" },
---         cwd = "${workspaceFolder}",
---         sourceMaps = true,
---         protocol = "inspector",
---       },
---     }
-
---     local dapui = require("dapui")
---     dapui.setup()
---     dap.listeners.after.event_initialized["dapui_config"] = function()
---       dapui.open()
---     end
---     dap.listeners.before.event_terminated["dapui_config"] = function()
---       dapui.close()
---     end
---     dap.listeners.before.event_exited["dapui_config"] = function()
---       dapui.close()
---     end
---   end,
--- }, 
